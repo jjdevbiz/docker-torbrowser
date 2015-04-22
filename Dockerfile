@@ -14,7 +14,7 @@ RUN localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || :
 # bug in docker messes up permissions of directories unless you do this first
 ADD . /home/docker
 
-ADD https://dist.torproject.org/torbrowser/4.0.4/tor-browser-linux64-4.0.4_en-US.tar.xz /home/docker/tor.tar.xz
+ADD https://dist.torproject.org/torbrowser/4.0.8/tor-browser-linux64-4.0.8_en-US.tar.xz /home/docker/tor.tar.xz
 
 RUN useradd -m -d /home/docker docker
 
