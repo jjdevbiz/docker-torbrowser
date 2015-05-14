@@ -22,4 +22,4 @@ RUN cd /home/docker && tar xJf /home/docker/tor.tar.xz
 
 USER docker
 
-CMD ["/home/docker/tor-browser_en-US/start-tor-browser"]
+CMD ["/home/docker/tor-browser_en-US/Browser/start-tor-browser"]
