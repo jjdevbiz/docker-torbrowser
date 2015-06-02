@@ -6,14 +6,22 @@ browsing.
 # Build from Dockerfile #
 
 ```
-git clone https://github.com/dbravender/docker-torbrowser.git
 docker build -t torbrowser .
+docker run -d -p 55556:22 torbrowser
 ```
 
-## Start Script ##
+## Start ##
 
-*Use the start script provided in this repository to start a browser*
-
-`./start`
-
-Pressing CTRL+C or closing the browser window will stop the container.
+*~/.ssh/config entry for easy ssh*
+```
+Host docker-tor
+  User      docker
+  Port      55556
+  HostName  127.0.0.1
+  RemoteForward 64713 localhost:4713
+  ForwardX11 yes
+```
+*use a script or tmux line to start a session*
+```
+tmux new -s torbrowser -d "ssh docker-ff './tor'"
+```
