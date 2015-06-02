@@ -10,7 +10,18 @@ RUN apt-get install -y iceweasel wget tar xz-utils openssh-server
 # Set locale (fix the locale warnings)
 RUN localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || :
 
+# Create user "docker" and set the password to "docker"
 RUN useradd -m -d /home/docker docker
+RUN echo "docker:docker" | chpasswd
+
+# Create OpenSSH privilege separation directory, enable X11Forwarding
+RUN mkdir -p /var/run/sshd
+RUN echo X11Forwarding yes >> /etc/ssh/ssh_config
+
+# Prepare ssh config folder so we can upload SSH public key later
+RUN mkdir /home/docker/.ssh
+RUN chown -R docker:docker /home/docker
+RUN chown -R docker:docker /home/docker/.ssh
 
 ADD https://www.torproject.org/dist/torbrowser/4.5.1/tor-browser-linux64-4.5.1_en-US.tar.xz /home/docker/tor.tar.xz
 
