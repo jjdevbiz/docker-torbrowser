@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get install -y iceweasel wget tar xz-utils openssh-server
 
 # Set locale (fix the locale warnings)
-RUN localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || :
+#RUN localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || :
 
 # Create user "docker" and set the password to "docker"
 RUN useradd -m -d /home/docker docker
