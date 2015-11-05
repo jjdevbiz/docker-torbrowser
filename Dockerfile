@@ -1,6 +1,5 @@
 # run torbrowser from within debian:stable
-
-FROM debian:jessie
+FROM debian:stable
 
 # Set the env variable DEBIAN_FRONTEND to noninteractive
 ENV DEBIAN_FRONTEND noninteractive
@@ -11,16 +10,26 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
 # tor version
-ENV TOR_VER=5.0.2
+# https://www.torproject.org/dist/torbrowser/5.0.4/tor-browser-linux64-5.0.4_en-US.tar.xz
+ENV VER 5.0.4
+ENV CHKSUM sha256sums-unsigned-build.txt
+ENV PACKAGE tor-browser-linux64-${VER}_en-US.tar.xz
+ENV GPG_KEY 0x4E2C6E8793298290
+# ENV GPG_KEYSERVER keys.mozilla.org
+ENV GPG_KEYSERVER x-hkp://pool.sks-keyservers.net
+ENV GPG_FINGERPRINT "5242 013F 02AF C851 B1C7  36B8 7017 ADCE F65C 2036"
+ENV SOURCE https://www.torproject.org/dist/torbrowser/${VER}/$PACKAGE
+ENV SOURCE_ASC https://www.torproject.org/dist/torbrowser/${VER}/$PACKAGE.asc
+ENV SOURCE_CHKSUM https://dist.torproject.org/torbrowser/${VER}/$CHKSUM
+ENV SOURCE_CHKSUM_ASC https://dist.torproject.org/torbrowser/${VER}/$CHKSUM.asc
 
 # update and upgrade
 RUN apt-get update
 RUN apt-get upgrade -y -qq
 
-RUN apt-get install -y iceweasel wget tar xz-utils openssh-server
-
-# Set locale (fix the locale warnings)
-#RUN localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || :
+RUN apt-get install -y -qq iceweasel
+RUN apt-get install -y -qq wget tar xz-utils
+RUN apt-get install -y -qq openssh-server
 
 # Create user "docker" and set the password to "docker"
 RUN useradd -m -d /home/docker docker
@@ -35,28 +44,23 @@ RUN chown -R docker:docker /home/docker/.ssh
 RUN mkdir -p /var/run/sshd
 RUN echo X11Forwarding yes >> /etc/ssh/ssh_config
 
-WORKDIR /home/docker
-
 # Download package, check package against gpg and checksum
-ADD https://www.torproject.org/dist/torbrowser/${TOR_VER}/tor-browser-linux64-${TOR_VER}_en-US.tar.xz
-ADD https://www.torproject.org/dist/torbrowser/${TOR_VER}/tor-browser-linux64-${TOR_VER}_en-US.tar.xz.asc
+WORKDIR /home/docker
+RUN wget $SOURCE
+RUN wget $SOURCE_ASC
+RUN wget $SOURCE_CHKSUM
+RUN wget $SOURCE_CHKSUM_ASC
 
-ADD https://dist.torproject.org/torbrowser/${TOR_VER}/sha256sums-unsigned-build.txt
-ADD https://dist.torproject.org/torbrowser/${TOR_VER}/sha256sums-unsigned-build.txt.asc
-
-RUN gpg --keyserver keys.mozilla.org --recv-keys 0x4E2C6E8793298290
-
+# RUN gpg --keyserver x-hkp://pool.sks-keyservers.net --recv-keys 0x4E2C6E8793298290
+# RUN gpg --keyserver $KEY_SERVER --recv-keys $GPG_KEY
 RUN gpg --keyserver x-hkp://pool.sks-keyservers.net --recv-keys 0x4E2C6E8793298290
-RUN gpg --fingerprint 0x4E2C6E8793298290 | grep "EF6E 286D DA85 EA2A 4BA7  DE68 4E2C 6E87 9329 8290"
+# RUN gpg --fingerprint $GPG_KEY | grep "5242 013F 02AF C851 B1C7  36B8 7017 ADCE F65C 2036" # $GPG_FINGERPRINT
+RUN gpg --verify $CHKSUM.asc
+RUN gpg --verify $PACKAGE.asc
 
-RUN gpg --verify /home/docker/sha256sums-unsigned-build.txt.asc
-RUN gpg --verify /home/docker/tor-browser-linux64-${TOR_VER}_en-US.tar.xz.asc
+RUN sha256sum -c $CHKSUM 2>/dev/null | grep $PACKAGE
 
-RUN grep tor-browser-linux64-${TOR_VER}_en-US.tar.xz /home/docker/sha256sums-unsigned-build.txt > /home/docker/tor-browser-linux64-${TOR_VER}_en-US.tar.xz.sha256sum
-RUN sha256sum -c tor-browser-linux64-${TOR_VER}_en-US.tar.xz.sha256sum
-
-RUN tar xJf /home/docker/tor-browser-linux64-${TOR_VER}_en-US.tar.xz
-
+RUN tar xJf $PACKAGE
 RUN ln -s /home/docker/tor-browser_en-US/Browser/firefox /home/docker/tor
 
 # Expose the SSH port
