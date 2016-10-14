@@ -11,7 +11,8 @@ ENV LANGUAGE en_US.UTF-8
 
 # tor version
 # https://www.torproject.org/dist/torbrowser/5.0.4/tor-browser-linux64-5.0.4_en-US.tar.xz
-ENV VER 5.0.4
+ENV USER docker
+ENV VER 6.0.5
 ENV CHKSUM sha256sums-unsigned-build.txt
 ENV PACKAGE tor-browser-linux64-${VER}_en-US.tar.xz
 ENV GPG_KEY 0x4E2C6E8793298290
@@ -31,21 +32,22 @@ RUN apt-get install -y -qq iceweasel
 RUN apt-get install -y -qq wget tar xz-utils
 RUN apt-get install -y -qq openssh-server
 
-# Create user "docker" and set the password to "docker"
-RUN useradd -m -d /home/docker docker
-RUN echo "docker:docker" | chpasswd
+# Create user "$USER" and set the password to "$USER"
+RUN useradd -m -d /home/$USER $USER
+RUN echo "$USER:$USER" | chpasswd
 
 # Prepare ssh config folder so we can upload SSH public key later
-RUN mkdir /home/docker/.ssh
-RUN chown -R docker:docker /home/docker
-RUN chown -R docker:docker /home/docker/.ssh
+RUN mkdir /home/$USER/.ssh
+RUN chown -R $USER:$USER /home/$USER
+RUN chown -R $USER:$USER /home/$USER/.ssh
 
 # Create OpenSSH privilege separation directory, enable X11Forwarding
 RUN mkdir -p /var/run/sshd
 RUN echo X11Forwarding yes >> /etc/ssh/ssh_config
 
 # Download package, check package against gpg and checksum
-WORKDIR /home/docker
+ENV USER $USER
+WORKDIR /home/$USER
 RUN wget $SOURCE
 RUN wget $SOURCE_ASC
 RUN wget $SOURCE_CHKSUM
@@ -61,7 +63,7 @@ RUN gpg --verify $PACKAGE.asc
 RUN sha256sum -c $CHKSUM 2>/dev/null | grep $PACKAGE
 
 RUN tar xJf $PACKAGE
-RUN ln -s /home/docker/tor-browser_en-US/Browser/firefox /home/docker/tor
+RUN ln -s /home/$USER/tor-browser_en-US/Browser/firefox /home/$USER/tor
 
 # Expose the SSH port
 EXPOSE 22
