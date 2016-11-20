@@ -12,7 +12,7 @@ ENV LANGUAGE en_US.UTF-8
 # tor version
 # https://www.torproject.org/dist/torbrowser/5.0.4/tor-browser-linux64-5.0.4_en-US.tar.xz
 ENV USER docker
-ENV VER 6.0.5
+ENV VER 6.0.6
 ENV CHKSUM sha256sums-unsigned-build.txt
 ENV PACKAGE tor-browser-linux64-${VER}_en-US.tar.xz
 ENV GPG_KEY 0x4E2C6E8793298290
